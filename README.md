@@ -1,2 +1,2 @@
 # Python
-All of Python codes I have written.
+# store my Python codes.
