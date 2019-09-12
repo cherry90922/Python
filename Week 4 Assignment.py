@@ -4,10 +4,13 @@ import re
 import requests
 import json
 
+# part1(): Web Scraping
+# a user will be asked to enter a stock ticker (symbol). The program will directly scrape webpage https://finance.yahoo.com/ 
+# and will return the current price of the current price for each ticker that the User enters until the User quits.
 
 def yahoo_req(url):
     """
-    url: 请求地址
+    url:
     """
     headers = {
         'User-Agent': r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
@@ -29,31 +32,34 @@ def yahoo_req(url):
 
 
 def part1():
-    # 输入股票代码
+    # input stock symbol
     stock_code = input("please enter the stock code.\n")
-    # 拼接请求地址
+    # url
     url = "https://finance.yahoo.com/quote/"+stock_code+"?p="+stock_code+"&.tsrc=fin-srch"
     try: 
-        # 发起请求、获取返回数据
+        # return result
         _html = yahoo_req(url)
-        # 正则抓取 股票价格  
+        # if Y, get stock price 
         # <span class="Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)" data-reactid="34">153.67</span>
         # <span class="Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)" data-reactid="34"></span>
         # <span class="Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)" data-reactid="34">1,152.32</span>
         search_data = re.search(r'<span class="Trsdu\(0.3s\) Fw\(b\) Fz\(36px\) Mb\(-4px\) D\(ib\)" data-reactid="34">(.*?)</span>', _html)
         cur_price = search_data.group(1)
         cur_price = re.sub(",", "", cur_price)
-        # 打印输出股票价格
+        # print stock price
         print("{0} Current price is {1}\n".format(stock_code, cur_price))
     except Exception as e:
-        # 未搜索到股票价格、或返回页面有误等情况、打印输出
+        # if stock price is not returned, or page error, print result
         print("{0} Current price search error --> {1}\n".format(stock_code, str(e))) 
     pass
 
-# part1()
+
+# part2: the program will ask the User to enter a zip code and will return 
+# results, the zipcode, the date, the state, the city, and the AQI results (air quality).
+# also part1 and part2 are combined
 
 def air_new_req(zip_code):
-    # 拼接请求地址
+    # url
     # http://www.airnowapi.org/aq/forecast/zipCode/?format=application/json&zipCode=20002&API_KEY=968366E5-84C5-4D28-8FFE-40D6858219AE
     headers = {
         'Connection':'close',
@@ -61,21 +67,20 @@ def air_new_req(zip_code):
     }
     url = "http://www.airnowapi.org/aq/forecast/zipCode/"+"?zipCode="+zip_code+"&format=application/json&API_KEY=968366E5-84C5-4D28-8FFE-40D6858219AE"
     response = requests.post(url, headers=headers)
-    # 获取返回数据
+    # get feedback
     json_str = response.content.decode("utf-8")
     if not json_str or json_str.strip() == "":
         return None
-    # 转换json格式
     # print(json_str)
     json_data = json.loads(json_str)
     return json_data
 
 
 def part2(FILE_PATH):
-    # 输入邮政编码
+    # input zipcode
     zip_code = input("please enter the zipCode.\n")
     try: 
-        # 发起请求、获取返回数据  date --> DateForecast or DateIssue
+        #  date --> DateForecast or DateIssue
         # the zipcode, the date, the state, the city, and the AQI 
         res_data = air_new_req(zip_code)
         for data in res_data:
@@ -84,13 +89,13 @@ def part2(FILE_PATH):
             stateCode = data["StateCode"]
             reportingArea = data["ReportingArea"]
             aqi = data["AQI"]
-            # 打印输出 查询预测结果
+            # print result
             print_str = "{0}\t{1}\t{2}\t{3}\t{4}\n".format(zip_code, dateIssue, stateCode, reportingArea, aqi)
             print(print_str)
             with open(FILE_PATH, "a+", encoding="utf-8") as f:
                 f.write(print_str)
     except Exception as e:
-        # 未搜索到数据、或异常情况、打印输出
+        # if stock price is not returned, or page error, print result
         print("{0} search error --> {1}\n".format(zip_code, str(e)))
     pass
 
@@ -109,7 +114,7 @@ if __name__ == "__main__":
             print("end ...")
             break
         is_continue = input("Press `Y` to continue and `N` to stop.\n")
-        # 如果输入N则跳出循环
+        # If input "N", end loop
         if is_continue == "N":
             break
         pass    
